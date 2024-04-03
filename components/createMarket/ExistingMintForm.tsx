@@ -13,7 +13,7 @@ export default function ExistingMintForm({
   return (
     <div className="space-y-2">
       <div>
-        <label className="block text-xs text-slate-400">Base Mint</label>
+        <label className="block text-xs text-slate-400">Base Mint <strong>(Your Token)</strong></label>
         <div className="mt-1">
           <input
             type="text"
@@ -31,7 +31,7 @@ export default function ExistingMintForm({
         </div>
       </div>
       <div>
-        <label className="block text-xs text-slate-400">Quote Mint</label>
+        <label className="block text-xs text-slate-400">Quote Mint <strong>(SOL)</strong></label>
         <div className="mt-1">
           <input
             type="text"

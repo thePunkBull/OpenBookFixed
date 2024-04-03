@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { useRouter } from "next/router";
-import { ReactNode } from "react";
-import { getSearchLayout } from "../components/layouts/SearchLayout";
+//import { ReactNode } from "react";
 import { useSerumMarkets } from "../hooks/useSerumMarkets";
 import { classNames } from "../utils/general";
 import { prettifyDecimal } from "../utils/numerical";
@@ -58,47 +57,10 @@ const Home = () => {
             <div className="bg-slate-700 animate-pulse w-full h-8 rounded-lg" />
           ) : null}
         </StatBlock>
-        {/* <StatBlock loading={loading}>
-          <div>
-            <p className="text-transparent bg-clip-text serum-gradient text-sm">
-              TVL
-            </p>
-          </div>
-          {!network ? (
-            <div>
-              <p className="text-2xl font-medium text-slate-200">
-                {prettifyDecimal(stats?.tvl, 2)}
-              </p>
-            </div>
-          ) : (
-            <div>
-              <p className="text-slate-500">Unavailable</p>
-            </div>
-          )}
-        </StatBlock>
-        <StatBlock loading={loading}>
-          <div>
-            <p className="text-transparent bg-clip-text serum-gradient text-sm">
-              Total Vol. 1d
-            </p>
-          </div>
-          {!network ? (
-            <div>
-              <p className="text-2xl font-medium text-slate-200">
-                {prettifyDecimal(stats?.totalVol1d, 2)}
-              </p>
-            </div>
-          ) : (
-            <div>
-              <p className="text-slate-500">Unavailable</p>
-            </div>
-          )}
-        </StatBlock> */}
       </div>
     </div>
   );
 };
 
-Home.getLayout = (page: ReactNode) => getSearchLayout(page, "Home");
 
 export default Home;

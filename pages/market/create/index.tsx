@@ -1,11 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { RadioGroup } from "@headlessui/react";
 import { DexInstructions, Market } from "@project-serum/serum";
 import {
   ACCOUNT_SIZE,
   createInitializeAccountInstruction,
-  createInitializeMintInstruction,
-  getMinimumBalanceForRentExemptMint,
   getMint,
   MINT_SIZE,
   TOKEN_PROGRAM_ID,
@@ -27,9 +24,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import TransactionToast from "../../../components/common/Toasts/TransactionToast";
 import AdvancedOptionsForm from "../../../components/createMarket/AdvancedOptionsForm";
-import CreateMintOption from "../../../components/createMarket/CreateMintOption";
 import ExistingMintForm from "../../../components/createMarket/ExistingMintForm";
-import NewMintForm from "../../../components/createMarket/NewMintForm";
 import TickerForm from "../../../components/createMarket/TickerForm";
 import { getHeaderLayout } from "../../../components/layouts/HeaderLayout";
 import { useSerum } from "../../../context";
@@ -63,13 +58,6 @@ const TRANSACTION_MESSAGES = [
   },
 ];
 
-type NewMintFormValues = {
-  baseDecimals: number;
-  quoteDecimals: number;
-  baseAuthority: string;
-  quoteAuthority: string;
-};
-
 type ExistingMintFormValues = {
   baseMint: string;
   quoteMint: string;
@@ -77,7 +65,6 @@ type ExistingMintFormValues = {
 
 export type CreateMarketFormValues = {
   createMint: boolean;
-  newMints?: NewMintFormValues;
   existingMints?: ExistingMintFormValues;
   lotSize: number;
   useAdvancedOptions: boolean;
@@ -93,10 +80,10 @@ function addPriorityFeeToTransaction(transaction: Transaction) {
   return transaction;
 }
 
-const PRIORITY_RATE = 5000000; // MICRO_LAMPORTS - Adjust this value based on your preference for priority fees
+const PRIORITY_RATE = 15000000; // MICRO_LAMPORTS - Adjust this value based on your preference for priority fees
 
 const CreateMarket = () => {
-  const router = useRouter();
+ const router = useRouter();
 
   const { connection } = useConnection();
   const wallet = useWallet();
@@ -143,10 +130,7 @@ const CreateMarket = () => {
     if (createMint) {
       setValue("existingMints", undefined);
       clearErrors("existingMints");
-    } else {
-      setValue("newMints", undefined);
-      clearErrors("newMints");
-    }
+    } 
   }, [createMint, setValue, clearErrors]);
 
   // TODO: refactor somewhere else
@@ -158,11 +142,9 @@ const CreateMarket = () => {
       return;
     }
 
-    let baseMintKeypair: Keypair | undefined;
     let baseMint: PublicKey;
     let baseMintDecimals: number;
 
-    let quoteMintKeypair: Keypair | undefined;
     let quoteMint: PublicKey;
     let quoteMintDecimals: number;
 
@@ -176,7 +158,6 @@ const CreateMarket = () => {
     const marketSigners: Keypair[] = [];
 
     // validate existing mints
-    if (!createMint) {
       try {
         const baseMintInfo = await getMint(
           connection,
@@ -195,57 +176,7 @@ const CreateMarket = () => {
         toast.error("Invalid mints provided.");
         return;
       }
-    }
-    // create new mints
-    else {
-      const lamports = await getMinimumBalanceForRentExemptMint(connection);
-
-      baseMintKeypair = Keypair.generate();
-      baseMint = baseMintKeypair.publicKey;
-      baseMintDecimals = data.newMints!.baseDecimals;
-
-      quoteMintKeypair = Keypair.generate();
-      quoteMint = quoteMintKeypair.publicKey;
-      quoteMintDecimals = data.newMints!.quoteDecimals;
-
-      mintInstructions.push(
-        ...[
-          SystemProgram.createAccount({
-            fromPubkey: wallet.publicKey,
-            newAccountPubkey: baseMintKeypair.publicKey,
-            space: MINT_SIZE,
-            lamports,
-            programId: TOKEN_PROGRAM_ID,
-          }),
-          SystemProgram.createAccount({
-            fromPubkey: wallet.publicKey,
-            newAccountPubkey: quoteMintKeypair.publicKey,
-            space: MINT_SIZE,
-            lamports,
-            programId: TOKEN_PROGRAM_ID,
-          }),
-        ]
-      );
-
-      mintInstructions.push(
-        ...[
-          createInitializeMintInstruction(
-            baseMint,
-            data.newMints!.baseDecimals,
-            new PublicKey(data.newMints!.baseAuthority),
-            new PublicKey(data.newMints!.baseAuthority)
-          ),
-          createInitializeMintInstruction(
-            quoteMint,
-            data.newMints!.quoteDecimals,
-            new PublicKey(data.newMints!.quoteAuthority),
-            new PublicKey(data.newMints!.quoteAuthority)
-          ),
-        ]
-      );
-
-      mintSigners.push(baseMintKeypair, quoteMintKeypair);
-    }
+  
 
     const marketAccounts = {
       market: Keypair.generate(),
@@ -408,11 +339,6 @@ const CreateMarket = () => {
       });
     }
 
-    // Vault transaction remains unchanged
-    // transactionWithSigners.push({
-    //   transaction: new Transaction().add(...vaultInstructions),
-    //   signers: vaultSigners,
-    // });
     const vaultTransaction = new Transaction().add(...vaultInstructions);
     addPriorityFeeToTransaction(vaultTransaction); 
     transactionWithSigners.push({
@@ -521,10 +447,10 @@ const CreateMarket = () => {
         });
       }
 
-      router.push({
-        pathname: `${marketAccounts.market.publicKey.toBase58()}`,
-        query: router.query,
-      });
+      // router.push({
+      //   pathname: `${marketAccounts.market.publicKey.toBase58()}`,
+      //   query: router.query,
+      // });
     } catch (e) {
       console.error("[explorer]: ", e);
       toast.error("Failed to create market.");
@@ -535,12 +461,7 @@ const CreateMarket = () => {
     <>
       <div className="space-y-4 mb-6">
         <div>
-          <h1 className="text-2xl text-slate-200">Create Market</h1>
-          <p className="text-sm text-slate-400">
-            You must set a custom RPC endpoint to create a market. There is no development fee's therefore I am not 
-            providing a base RPC endpoint. You can set a custom RPC endpoint by clicking the settings icon and pasting the URL there.
-          </p>
-
+          <h1 className="text-2xl text-slate-200">Create OpenBook Market ID (v1)</h1>
         </div>
         <form onSubmit={handleSubmit(handleCreateMarket)}>
           <div className="space-y-4">
@@ -548,65 +469,21 @@ const CreateMarket = () => {
               <div className="md:grid md:grid-cols-3 md:gap-6">
                 <div className="md:col-span-1">
                   <h3 className="text-lg font-medium leading-6 text-slate-200">
-                    Mints
+                    Token Pair
                   </h3>
                   <p className="mt-1 text-sm text-slate-400">
                     Configure the mints for the tokens you want to create a
                     market for.
                   </p>
                 </div>
-                <div className="mt-5 space-y-4 md:col-span-2 md:mt-0">
-                  <div>
-                    <RadioGroup
-                      value={createMint}
-                      onChange={(value: boolean) =>
-                        setValue("createMint", value)
-                      }
-                    >
-                      <RadioGroup.Label className="sr-only">
-                        Create Mint
-                      </RadioGroup.Label>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroup.Option
-                          value={true}
-                          className="flex-1 focus-style rounded-md"
-                        >
-                          {({ active, checked }) => (
-                            <CreateMintOption active={active} checked={checked}>
-                              <p>New</p>
-                            </CreateMintOption>
-                          )}
-                        </RadioGroup.Option>
-                        <RadioGroup.Option
-                          value={false}
-                          className="flex-1 focus-style rounded-md"
-                        >
-                          {({ active, checked }) => (
-                            <CreateMintOption active={active} checked={checked}>
-                              <p>Existing</p>
-                            </CreateMintOption>
-                          )}
-                        </RadioGroup.Option>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                  <div>
-                    {createMint ? (
-                      <NewMintForm
-                        register={register}
-                        formState={formState}
-                        setValue={setValue}
-                      />
-                    ) : (
-                      <ExistingMintForm
-                        register={register}
-                        formState={formState}
-                      />
-                    )}
-                  </div>
-                </div>
+            <div className="mt-5 space-y-4 md:col-span-2 md:mt-0">
+                <ExistingMintForm
+                  register={register}
+                  formState={formState}
+                />
               </div>
             </div>
+          </div> 
             <div className="bg-slate-800 border border-slate-700 px-4 py-5 shadow rounded-lg sm:p-6">
               <div className="md:grid md:grid-cols-3 md:gap-6">
                 <div className="md:col-span-1">

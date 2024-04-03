@@ -8,7 +8,7 @@ export default function TickerForm({ register }: TickerFormProps) {
   return (
     <div className="space-y-2">
       <div>
-        <label className="block text-xs text-slate-400">Min. Order Size</label>
+        <label className="block text-xs text-slate-400">Min. Order Size (Minimum Buy)</label>
         <div className="relative mt-1 rounded-md shadow-sm">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <span className="text-slate-400 sm:text-sm">
@@ -29,7 +29,7 @@ export default function TickerForm({ register }: TickerFormProps) {
           data-tooltip-target="tooltip-default"
           className="block text-xs text-slate-400"
         >
-          Price Tick
+          Price Tick (Minimum Price Change)
         </label>
         <div
           id="tooltip-default"

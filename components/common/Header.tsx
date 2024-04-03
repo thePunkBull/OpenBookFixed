@@ -1,6 +1,4 @@
 import { Popover, Transition } from "@headlessui/react";
-import { useRouter } from "next/router";
-import { ParsedUrlQuery } from "querystring";
 import { FC, Fragment } from "react";
 import WalletButton from "./WalletButton";
 import { Bars3Icon, Cog6ToothIcon } from "@heroicons/react/24/outline";
@@ -8,72 +6,16 @@ import SettingsPanel from "./SettingsPanel";
 import { useSerum } from "../../context";
 import { DEX_PROGRAMS } from "../../utils/constants";
 import { prettifyPubkey } from "../../utils/pubkey";
-import Link from "next/link";
 
 const Header: FC = () => {
-  const router = useRouter();
-
   const { programID } = useSerum();
 
-  // const { serumMarkets, loading } = useSerumMarkets();
-
-  const sanitizeQuery = (query: ParsedUrlQuery) => {
-    if (query.address) {
-      delete query.address;
-    }
-    return { ...query };
-  };
 
   return (
     <Popover className="relative z-50">
       <div className="flex items-center justify-between px-4 py-3 sm:px-6 md:space-x-6 space-x-2 bg-slate-800 border-b border-slate-700">
         <div className="flex justify-start items-center space-x-8">
-          <button
-            className="text-lg  text-white no-underline text-left flex space-x-2 items-center focus-visible:outline-none rounded-sm focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:border-none"
-            onClick={() =>
-              router.push({ pathname: "/", query: sanitizeQuery(router.query) })
-            }
-          >
-            {/* <div className="h-16 w-16 absolute">
-              <Image
-                src="/OpenBook-Logomark.svg"
-                width={1}
-                height={1}
-                layout="responsive"
-                alt="Serum Explorer"
-              />
-            </div> */}
-            <p className="text-transparent bg-clip-text serum-gradient">
-              Openbook Explorer
-            </p>
-          </button>
           <div className="space-x-4 hidden md:flex items-center">
-            <Link
-              passHref
-              href={{
-                pathname: `/decoder`,
-                query: router.query,
-              }}
-            >
-              <a className="focus-style px-1 rounded">
-                <p className="text-sm text-slate-200 hover:underline focus-visible:outline-none rounded-sm focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:border-none">
-                  Decoder
-                </p>
-              </a>
-            </Link>
-            <Link
-              passHref
-              href={{
-                pathname: `/market/create`,
-                query: router.query,
-              }}
-            >
-              <a className="focus-style px-1 rounded">
-                <p className="text-sm text-slate-200 hover:underline focus-visible:outline-none rounded-sm focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:border-none">
-                  Create Market
-                </p>
-              </a>
-            </Link>
           </div>
         </div>
         <div className="md:hidden">
@@ -102,7 +44,6 @@ const Header: FC = () => {
                 ${open ? "" : "text-opacity-90"}
                 group inline-flex items-center rounded-md bg-slate-700 hover:bg-slate-600 px-3 py-2 text-sm focus-style transition-colors`}
                   >
-                    {/* <span>Settings</span> */}
                     <Cog6ToothIcon
                       className={`${open ? "" : "text-opacity-70"}
                   h-5 w-5 text-slate-200 group-hover:text-slate-300 transition duration-150 ease-in-out group-hover:text-opacity-80`}
